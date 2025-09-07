@@ -1,8 +1,29 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# GitHub PR Review Dashboard
+
+A modern Next.js application for tracking GitHub pull requests with Firebase integration.
+
+## Environment Setup
+
+Create a `.env.local` file in the root directory with the following variables:
+
+```bash
+# Firebase Configuration (NEXT_PUBLIC_ prefix for client-side access)
+NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your_measurement_id
+
+# GitHub Configuration (Server-side only)
+GITHUB_ORG=your_github_organization
+GITHUB_TOKEN=your_github_personal_access_token
+```
 
 ## Getting Started
 
-First, run the development server:
+First, set up your environment variables, then run the development server:
 
 ```bash
 npm run dev
