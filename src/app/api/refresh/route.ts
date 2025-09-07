@@ -2,6 +2,37 @@ import { NextResponse } from "next/server";
 import { collection, doc, setDoc } from "firebase/firestore";
 import { db } from "../firebase";
 
+interface PR {
+  id: string;
+  title?: string;
+  repo?: string;
+  author?: string;
+  url?: string;
+  approvals?: number;
+  updated_at?: string;
+}
+
+interface GitHubUser {
+  login: string;
+  id: number;
+  [key: string]: unknown;
+}
+
+interface GitHubPullRequest {
+  number: number;
+  title: string;
+  draft: boolean;
+  html_url: string;
+  updated_at: string;
+  user: GitHubUser;
+  [key: string]: unknown;
+}
+
+interface GitHubReview {
+  state: string;
+  [key: string]: unknown;
+}
+
 const GITHUB_ORG = process.env.GITHUB_ORG!;
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN!;
 const baseUri = "https://api.github.com/";
@@ -17,7 +48,7 @@ export async function GET() {
     });
     const repos = await reposRes.json();
 
-    let allPRs: any[] = [];
+    const allPRs: PR[] = [];
 
     // Step 2: loop repos → fetch open non-draft PRs
     for (const repo of repos) {
@@ -30,10 +61,10 @@ export async function GET() {
           },
         }
       );
-      const pulls = await pullsRes.json();
+      const pulls: GitHubPullRequest[] = await pullsRes.json();
       if (!pulls || pulls.length === 0) continue;
 
-      for (const pr of pulls.filter((p: any) => !p.draft)) {
+      for (const pr of pulls.filter((p: GitHubPullRequest) => !p.draft)) {
         const reviewsRes = await fetch(
           `${baseUri}repos/${GITHUB_ORG}/${repo.name}/pulls/${pr.number}/reviews`,
           {
@@ -43,8 +74,8 @@ export async function GET() {
             },
           }
         );
-        const reviews = await reviewsRes.json();
-        const approvalCount = reviews.filter((r: any) => r.state === "APPROVED")
+        const reviews: GitHubReview[] = await reviewsRes.json();
+        const approvalCount = reviews.filter((r: GitHubReview) => r.state === "APPROVED")
           .length;
 
         allPRs.push({
@@ -60,7 +91,7 @@ export async function GET() {
     }
 
     // Step 3: sort by approvals (ascending)
-    allPRs.sort((a, b) => a.approvals - b.approvals);
+    allPRs.sort((a, b) => (a.approvals || 0) - (b.approvals || 0));
 
     // Step 4: write into Firestore
     const colRef = collection(db, "prs");
